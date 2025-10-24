@@ -22,7 +22,7 @@ class Evento extends Model
         return 'id_evento';
     }
 
-    // Campos que se pueden llenar
+    // Campos 
     protected $fillable = [
         'titulo',
         'descripcion',
@@ -37,7 +37,7 @@ class Evento extends Model
         'id_usuarios',
     ];
 
-    // Campos que deben ser tratados como tipos específicos
+    // tratados como tipos específicos
     protected $casts = [
         'requiere_estacionamiento' => 'boolean',
         'duracion' => 'integer',
