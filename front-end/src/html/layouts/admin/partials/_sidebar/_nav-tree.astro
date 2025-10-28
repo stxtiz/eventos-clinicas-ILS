@@ -90,7 +90,12 @@ const isActiveParent = (path: string) => currentPath.startsWith(path)
         </li>
         <li class={`nav-item ${isActive('eventos/eventos-crud') ? 'active' : ''}`}>
           <a class="nav-link" href={getPathPrefix('/eventos/eventos-crud')}>
-            <span>Crear Eventos</span>
+            <span>Eventos</span>
+          </a>
+        </li>
+        <li class={`nav-item ${isActive('eventos/fechas-evento-crud') ? 'active' : ''}`}>
+          <a class="nav-link" href={getPathPrefix('/eventos/fechas-evento-crud')}>
+            <span>Fechas de Eventos</span>
           </a>
         </li>
       </ul>
@@ -304,11 +309,6 @@ const isActiveParent = (path: string) => currentPath.startsWith(path)
         <i class="ri-arrow-right-s-line"></i>
       </a>
       <ul class="submenu">
-        <li class={`nav-item ${isActive('others/fechas-evento-crud') ? 'active' : ''}`}>
-          <a class="nav-link" href={getPathPrefix('/others/fechas-evento-crud')}>
-            <span>Fechas de Eventos CRUD</span>
-          </a>
-        </li>
         <li class={`nav-item ${isActive('others/coming-soon') ? 'active' : ''}`}>
           <a class="nav-link" href={getPathPrefix('/others/coming-soon')}>
             <span>Coming Soon</span>
