@@ -78,7 +78,7 @@ const eventosPageConfig: PageHeaderProps = {
           ) : (
             <div class="table-responsive">
               <table class="table table-hover align-middle">
-                <thead class="table-light">
+                <thead class="table">
                   <tr>
                     <th>Título</th>
                     <th>Descripción</th>
@@ -120,23 +120,21 @@ const eventosPageConfig: PageHeaderProps = {
                       </td>
                       <td>{evento.duracion ? evento.duracion + ' min' : 'N/A'}</td>
                       <td class="text-end">
-                        <div class="btn-group" role="group">
                           <button 
-                            class="btn btn-sm btn-outline-primary edit-evento" 
+                            class="btn btn-sm btn-light me-2 edit-evento" 
                             data-evento-id={evento.id_evento}
                             title="Editar"
                           >
                             <i class="ri-edit-line"></i>
                           </button>
                           <button 
-                            class="btn btn-sm btn-outline-danger delete-evento" 
+                            class="btn btn-sm btn-danger delete-evento" 
                             data-evento-id={evento.id_evento}
                             data-evento-titulo={evento.titulo}
                             title="Eliminar"
                           >
                             <i class="ri-delete-bin-line"></i>
                           </button>
-                        </div>
                       </td>
                     </tr>
                   ))}
