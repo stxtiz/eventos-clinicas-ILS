@@ -6,41 +6,41 @@ import { getPathPrefix } from '../../../utils/path.js'
 import { ApiService } from '../../../services/api.js'
 
 // Obtener datos reales desde la API
-let lugares = []
+let fechasEvento = []
 let hasError = false
 
 try {
-  const response = await ApiService.getLugares()
-  lugares = response.data || []
+  const response = await ApiService.getFechasEvento()
+  fechasEvento = response.data || []
 } catch (error) {
-  console.error('Error fetching lugares:', error)
+  console.error('Error fetching fechas evento:', error)
   hasError = true
 }
 
-const lugaresPageConfig: PageHeaderProps = {
-  title: 'Gestión de Lugares',
+const fechasEventoPageConfig: PageHeaderProps = {
+  title: 'Gestión de Fechas de Eventos',
   breadcrumbs: [
     { label: 'Dashboard', href: getPathPrefix('/dashboard'), class: '' },
     { label: 'Other Pages', class: '' },
-    { label: 'Lugares CRUD', class: 'active' }
+    { label: 'Fechas de Eventos CRUD', class: 'active' }
   ]
 }
 ---
 
 <AdminLayout
-  title="Gestión de Lugares"
-  description="Administración de lugares del sistema"
-  currentPath="/others/lugares-crud"
+  title="Gestión de Fechas de Eventos"
+  description="Administración de fechas de eventos del sistema"
+  currentPath="/others/fechas-evento-crud"
 >
-  <PageHeader {...lugaresPageConfig} />
+  <PageHeader {...fechasEventoPageConfig} />
 
   <div class="row">
     <div class="col-12">
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="card-title mb-0">Lista de Lugares</h5>
-          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLugarModal">
-            <i class="ri-add-line me-1"></i> Nuevo Lugar
+          <h5 class="card-title mb-0">Lista de Fechas de Eventos</h5>
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFechaEventoModal">
+            <i class="ri-add-line me-1"></i> Nueva Fecha
           </button>
         </div>
         <div class="card-body">
@@ -54,13 +54,13 @@ const lugaresPageConfig: PageHeaderProps = {
                   type="text" 
                   class="form-control" 
                   id="searchInput" 
-                  placeholder="Buscar por nombre, dirección o tipo..."
+                  placeholder="Buscar por evento o fecha..."
                 >
               </div>
             </div>
             <div class="col-md-4 text-end">
               <button class="btn btn-outline-secondary" id="sortButton">
-                <i class="ri-sort-asc"></i> Ordenar A-Z
+                <i class="ri-sort-asc"></i> Ordenar por Fecha
               </button>
             </div>
           </div>
@@ -68,73 +68,82 @@ const lugaresPageConfig: PageHeaderProps = {
           {hasError ? (
             <div class="alert alert-danger" role="alert">
               <i class="ri-error-warning-line me-2"></i>
-              Error al cargar los lugares. Por favor, intente nuevamente.
+              Error al cargar las fechas de eventos. Por favor, intente nuevamente.
             </div>
-          ) : lugares.length === 0 ? (
+          ) : fechasEvento.length === 0 ? (
             <div class="alert alert-info" role="alert">
               <i class="ri-information-line me-2"></i>
-              No hay lugares registrados en el sistema.
+              No hay fechas de eventos registradas en el sistema.
             </div>
           ) : (
             <div class="table-responsive">
               <table class="table table-hover align-middle">
                 <thead class="table-light">
                   <tr>
-                    <th>Nombre</th>
-                    <th>Dirección</th>
-                    <th>Tipo</th>
                     <th>ID</th>
+                    <th>Evento</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
                     <th class="text-end">Acciones</th>
                   </tr>
                 </thead>
-                <tbody id="lugaresTableBody">
-                  {lugares.map((lugar) => (
-                    <tr>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center me-2">
-                            <i class="ri-map-pin-line text-primary"></i>
-                          </div>
+                <tbody id="fechasEventoTableBody">
+                  {fechasEvento.map((fechaEvento, index) => {
+                    const fecha = new Date(fechaEvento.fecha)
+                    const hoy = new Date()
+                    hoy.setHours(0, 0, 0, 0)
+                    const esFutura = fecha >= hoy
+                    const esPasada = fecha < hoy
+                    
+                    return (
+                      <tr data-real-id={fechaEvento.id_fecha}>
+                        <td>
+                          <span class="badge bg-secondary">#{index + 1}</span>
+                        </td>
+                        <td>
                           <div>
-                            <div class="fw-medium">{lugar.nombre}</div>
+                            <div class="fw-medium">
+                              {fechaEvento.evento?.titulo || 'Sin evento'}
+                            </div>
+                            <small class="text-muted">
+                              ID Evento: #{fechaEvento.id_evento}
+                            </small>
                           </div>
-                        </div>
-                      </td>
-                      <td>
-                        <small class="text-muted">
-                          <i class="ri-map-pin-2-line me-1"></i>
-                          {lugar.direccion}
-                        </small>
-                      </td>
-                      <td>
-                        <span class="badge bg-info">
-                          {lugar.tipo}
-                        </span>
-                      </td>
-                      <td>
-                        <small class="text-muted">#{lugar.id_lugar}</small>
-                      </td>
-                      <td class="text-end">
-                        <div class="btn-group" role="group">
-                          <button 
-                            class="btn btn-sm btn-outline-primary edit-lugar" 
-                            data-lugar-id={lugar.id_lugar}
-                            title="Editar"
-                          >
-                            <i class="ri-edit-line"></i>
-                          </button>
-                          <button 
-                            class="btn btn-sm btn-outline-danger delete-lugar" 
-                            data-lugar-id={lugar.id_lugar}
-                            data-lugar-nombre={lugar.nombre}
-                            title="Eliminar"
-                          >
-                            <i class="ri-delete-bin-line"></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <i class="ri-calendar-line me-2"></i>
+                            <span>{new Date(fechaEvento.fecha).toLocaleDateString('es-ES', { 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric' 
+                            })}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span class={`badge bg-${esFutura ? 'success' : 'secondary'}`}>
+                            {esFutura ? 'Próxima' : 'Pasada'}
+                          </span>
+                        </td>
+                        <td class="text-end">
+                            <button 
+                              class="btn btn-sm btn-light me-2 edit-fecha" 
+                              title="Editar"
+                            >
+                              <i class="ri-edit-line"></i>
+                            </button>
+                            <button 
+                              class="btn btn-sm btn-danger delete-fecha" 
+                              data-fecha-evento={fechaEvento.evento?.titulo || 'Sin nombre'}
+                              data-fecha-date={new Date(fechaEvento.fecha).toLocaleDateString('es-ES')}
+                              title="Eliminar"
+                            >
+                              <i class="ri-delete-bin-line"></i>
+                            </button>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
@@ -153,38 +162,35 @@ const lugaresPageConfig: PageHeaderProps = {
     </div>
   </div>
 
-  <!-- Modal para Agregar Lugar -->
-  <div class="modal fade" id="addLugarModal" tabindex="-1">
+  <!-- Modal para Agregar Fecha de Evento -->
+  <div class="modal fade" id="addFechaEventoModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Nuevo Lugar</h5>
+          <h5 class="modal-title">Nueva Fecha de Evento</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <form id="addLugarForm">
+        <form id="addFechaEventoForm">
           <div class="modal-body">
             <div class="row g-3">
               <div class="col-12">
-                <label for="add_nombre" class="form-label">Nombre <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="add_nombre" name="nombre" required maxlength="100">
-                <small class="text-muted">Máximo 100 caracteres</small>
+                <label for="add_id_evento" class="form-label">Evento <span class="text-danger">*</span></label>
+                <select class="form-select" id="add_id_evento" name="id_evento" required>
+                  <option value="">Cargando eventos...</option>
+                </select>
+                <small class="text-muted">Seleccione el evento al que pertenece esta fecha</small>
               </div>
               <div class="col-12">
-                <label for="add_direccion" class="form-label">Dirección <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="add_direccion" name="direccion" required maxlength="255">
-                <small class="text-muted">Dirección completa del lugar</small>
-              </div>
-              <div class="col-12">
-                <label for="add_tipo" class="form-label">Tipo <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="add_tipo" name="tipo" required maxlength="60" placeholder="Ej: Auditorio, Sala, Laboratorio">
-                <small class="text-muted">Tipo o categoría del lugar (máximo 60 caracteres)</small>
+                <label for="add_fecha" class="form-label">Fecha <span class="text-danger">*</span></label>
+                <input type="date" class="form-control" id="add_fecha" name="fecha" required>
+                <small class="text-muted">La fecha no puede ser anterior a hoy</small>
               </div>
             </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary" id="addLugarBtn">
-              <i class="ri-save-line me-1"></i> Guardar Lugar
+            <button type="submit" class="btn btn-primary" id="addFechaEventoBtn">
+              <i class="ri-save-line me-1"></i> Guardar Fecha
             </button>
           </div>
         </form>
@@ -192,12 +198,12 @@ const lugaresPageConfig: PageHeaderProps = {
     </div>
   </div>
 
-  <!-- Modal para Editar Lugar -->
-  <div class="modal fade" id="editLugarModal" tabindex="-1">
+  <!-- Modal para Editar Fecha de Evento -->
+  <div class="modal fade" id="editFechaEventoModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Editar Lugar</h5>
+          <h5 class="modal-title">Editar Fecha de Evento</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body" id="editModalBody">
@@ -223,17 +229,17 @@ const lugaresPageConfig: PageHeaderProps = {
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <p>¿Está seguro que desea eliminar el lugar <strong id="deleteLugarNombre"></strong>?</p>
+          <p>¿Está seguro que desea eliminar la fecha <strong id="deleteFechaDate"></strong> del evento <strong id="deleteFechaEvento"></strong>?</p>
           <div class="alert alert-warning">
             <i class="ri-alert-line me-2"></i>
-            Esta acción no se puede deshacer. Solo se puede eliminar si no tiene eventos asociados.
+            Esta acción eliminará permanentemente la fecha y no se puede deshacer.
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
           <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
             <i class="ri-delete-bin-line me-1"></i>
-            Eliminar Lugar
+            Eliminar Fecha
           </button>
         </div>
       </div>
@@ -245,13 +251,14 @@ const lugaresPageConfig: PageHeaderProps = {
     import { ApiService } from '/src/services/api.js'
 
     // Variables globales
-    let currentLugarId = null
-    let lugarToDelete = null
+    let currentFechaId = null
+    let fechaToDelete = null
     let currentPage = 1
     const itemsPerPage = 10
     let filteredRows = []
+    let eventos = [] // Cache de eventos
 
-    const tableBody = document.getElementById('lugaresTableBody')
+    const tableBody = document.getElementById('fechasEventoTableBody')
     const allRows = tableBody ? [...tableBody.querySelectorAll('tr')] : []
 
     // Funciones de utilidad para UX
@@ -267,7 +274,7 @@ const lugaresPageConfig: PageHeaderProps = {
     }
 
     const toggleFormInputs = (disabled) => {
-      const inputs = document.querySelectorAll('#editLugarModal input, #editLugarModal select, #editLugarModal textarea')
+      const inputs = document.querySelectorAll('#editFechaEventoModal input, #editFechaEventoModal select')
       inputs.forEach(input => {
         input.disabled = disabled
       })
@@ -283,6 +290,43 @@ const lugaresPageConfig: PageHeaderProps = {
           saveBtn.innerHTML = text
         }
       }
+    }
+
+    // Función para cargar eventos
+    const loadEventos = async () => {
+      if (eventos.length > 0) {
+        return eventos // Retornar cache si ya están cargados
+      }
+
+      try {
+        const response = await ApiService.getEventos()
+        eventos = response.data || []
+        return eventos
+      } catch (error) {
+        console.error('Error al cargar eventos:', error)
+        return []
+      }
+    }
+
+    // Función para poblar el select de eventos
+    const populateEventosSelect = (selectElement, selectedId = null) => {
+      if (!selectElement) return
+
+      // Limpiar opciones existentes
+      selectElement.innerHTML = '<option value="">Seleccione un evento...</option>'
+
+      // Agregar opciones de eventos (solo eventos activos)
+      eventos.filter(evento => evento.estado === 1).forEach(evento => {
+        const option = document.createElement('option')
+        option.value = evento.id_evento
+        option.textContent = `${evento.titulo} - ${evento.modalidad?.toUpperCase()}`
+        
+        if (selectedId && evento.id_evento === selectedId) {
+          option.selected = true
+        }
+        
+        selectElement.appendChild(option)
+      })
     }
 
     // Función para mostrar alerta de éxito
@@ -344,22 +388,19 @@ const lugaresPageConfig: PageHeaderProps = {
 
     const createFormHTML = () => {
       return `
-        <form id="editLugarForm">
+        <form id="editFechaEventoForm">
           <div class="row g-3">
             <div class="col-12">
-              <label for="edit_nombre" class="form-label">Nombre <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="edit_nombre" name="nombre" required maxlength="100">
-              <small class="text-muted">Máximo 100 caracteres</small>
+              <label for="edit_id_evento" class="form-label">Evento <span class="text-danger">*</span></label>
+              <select class="form-select" id="edit_id_evento" name="id_evento" required>
+                <option value="">Seleccione un evento...</option>
+              </select>
+              <small class="text-muted">Seleccione el evento al que pertenece esta fecha</small>
             </div>
             <div class="col-12">
-              <label for="edit_direccion" class="form-label">Dirección <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="edit_direccion" name="direccion" required maxlength="255">
-              <small class="text-muted">Dirección completa del lugar</small>
-            </div>
-            <div class="col-12">
-              <label for="edit_tipo" class="form-label">Tipo <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="edit_tipo" name="tipo" required maxlength="60" placeholder="Ej: Auditorio, Sala, Laboratorio">
-              <small class="text-muted">Tipo o categoría del lugar (máximo 60 caracteres)</small>
+              <label for="edit_fecha" class="form-label">Fecha <span class="text-danger">*</span></label>
+              <input type="date" class="form-control" id="edit_fecha" name="fecha" required>
+              <small class="text-muted">La fecha no puede ser anterior a hoy</small>
             </div>
           </div>
         </form>
@@ -387,7 +428,7 @@ const lugaresPageConfig: PageHeaderProps = {
 
       if (totalPages <= 1) {
         pagination.innerHTML = ''
-        paginationInfo.textContent = `Mostrando ${filteredRows.length} lugares`
+        paginationInfo.textContent = `Mostrando ${filteredRows.length} fechas`
         return
       }
 
@@ -425,7 +466,7 @@ const lugaresPageConfig: PageHeaderProps = {
       // Info de paginación
       const startItem = (currentPage - 1) * itemsPerPage + 1
       const endItem = Math.min(currentPage * itemsPerPage, filteredRows.length)
-      paginationInfo.textContent = `Mostrando ${startItem}-${endItem} de ${filteredRows.length} lugares`
+      paginationInfo.textContent = `Mostrando ${startItem}-${endItem} de ${filteredRows.length} fechas`
     }
 
     const showPage = (page) => {
@@ -478,37 +519,76 @@ const lugaresPageConfig: PageHeaderProps = {
       })
     })
 
-    // Lógica para agregar nuevo lugar
-    const addLugarForm = document.getElementById('addLugarForm')
+    // Establecer fecha mínima a hoy
+    const setMinDate = () => {
+      const today = new Date().toISOString().split('T')[0]
+      const addFechaInput = document.getElementById('add_fecha')
+      if (addFechaInput) {
+        addFechaInput.setAttribute('min', today)
+      }
+    }
+
+    // Lógica para agregar nueva fecha de evento
+    const addFechaEventoForm = document.getElementById('addFechaEventoForm')
+    const addFechaEventoModal = document.getElementById('addFechaEventoModal')
     
-    if (addLugarForm) {
-      addLugarForm.addEventListener('submit', async function(e) {
+    // Cargar eventos cuando se abre el modal de agregar
+    if (addFechaEventoModal) {
+      addFechaEventoModal.addEventListener('show.bs.modal', async function() {
+        const selectEvento = document.getElementById('add_id_evento')
+        
+        // Cargar eventos
+        if (selectEvento) {
+          selectEvento.innerHTML = '<option value="">Cargando eventos...</option>'
+          selectEvento.disabled = true
+          
+          await loadEventos()
+          populateEventosSelect(selectEvento)
+          selectEvento.disabled = false
+        }
+
+        // Establecer fecha mínima
+        setMinDate()
+      })
+    }
+    
+    if (addFechaEventoForm) {
+      addFechaEventoForm.addEventListener('submit', async function(e) {
         e.preventDefault()
 
         const formData = new FormData(this)
         const data = {
-          nombre: formData.get('nombre').trim(),
-          direccion: formData.get('direccion').trim(),
-          tipo: formData.get('tipo').trim()
+          id_evento: parseInt(formData.get('id_evento')),
+          fecha: formData.get('fecha')
         }
 
-        const addBtn = document.getElementById('addLugarBtn')
+        // Validar que la fecha no sea anterior a hoy
+        const selectedDate = new Date(data.fecha)
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        
+        if (selectedDate < today) {
+          showErrorAlert('La fecha no puede ser anterior a hoy')
+          return
+        }
+
+        const addBtn = document.getElementById('addFechaEventoBtn')
         const originalText = addBtn.innerHTML
         addBtn.disabled = true
         addBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Guardando...'
 
         try {
-          await ApiService.createLugar(data)
+          await ApiService.createFechaEvento(data)
           
-          const modal = bootstrap.Modal.getInstance(document.getElementById('addLugarModal'))
+          const modal = bootstrap.Modal.getInstance(document.getElementById('addFechaEventoModal'))
           modal.hide()
 
-          showSuccessAlert('Lugar creado exitosamente', () => {
+          showSuccessAlert('Fecha de evento creada exitosamente', () => {
             window.location.reload()
           })
         } catch (error) {
           console.error('Error:', error)
-          showErrorAlert('Error al crear el lugar. Por favor, intente nuevamente.')
+          showErrorAlert('Error al crear la fecha de evento. Por favor, intente nuevamente.')
           addBtn.disabled = false
           addBtn.innerHTML = originalText
         }
@@ -516,36 +596,52 @@ const lugaresPageConfig: PageHeaderProps = {
     }
 
     // Lógica para el modal de edición
-    const editModal = document.getElementById('editLugarModal')
-    const editButtons = document.querySelectorAll('.edit-lugar')
+    const editModal = document.getElementById('editFechaEventoModal')
+    const editButtons = document.querySelectorAll('.edit-fecha')
 
     editButtons.forEach(button => {
       button.addEventListener('click', async function() {
-        currentLugarId = this.getAttribute('data-lugar-id')
+        // Obtener el ID real desde el atributo data-real-id del <tr>
+        const row = this.closest('tr')
+        currentFechaId = row.getAttribute('data-real-id')
 
         const modal = new bootstrap.Modal(editModal)
         modal.show()
 
         const modalBody = document.getElementById('editModalBody')
-        showLoading(modalBody, 'Cargando datos del lugar...')
+        showLoading(modalBody, 'Cargando datos de la fecha...')
         toggleSaveButton(true, 'Cargando...')
 
         try {
-          const response = await ApiService.getLugar(currentLugarId)
-          const lugar = response.data
+          // Cargar eventos y fecha en paralelo
+          const [response] = await Promise.all([
+            ApiService.getFechaEvento(currentFechaId),
+            loadEventos()
+          ])
+          
+          const fechaEvento = response.data
 
           modalBody.innerHTML = createFormHTML()
 
-          document.getElementById('edit_nombre').value = lugar.nombre || ''
-          document.getElementById('edit_direccion').value = lugar.direccion || ''
-          document.getElementById('edit_tipo').value = lugar.tipo || ''
+          // Poblar select de eventos con el valor seleccionado
+          const selectEvento = document.getElementById('edit_id_evento')
+          populateEventosSelect(selectEvento, fechaEvento.id_evento)
+
+          // Establecer fecha
+          const fechaInput = document.getElementById('edit_fecha')
+          fechaInput.value = fechaEvento.fecha
+          
+          // Establecer fecha mínima a hoy
+          const today = new Date().toISOString().split('T')[0]
+          fechaInput.setAttribute('min', today)
 
           toggleSaveButton(false)
         } catch (error) {
+          console.error('Error:', error)
           modalBody.innerHTML = `
             <div class="alert alert-danger">
               <i class="ri-error-warning-line me-2"></i>
-              Error al cargar los datos del lugar
+              Error al cargar los datos de la fecha de evento
             </div>
           `
           toggleSaveButton(true)
@@ -556,71 +652,82 @@ const lugaresPageConfig: PageHeaderProps = {
     // Manejador para guardar cambios
     document.addEventListener('click', async function(e) {
       if (e.target && e.target.id === 'saveChangesBtn') {
-        if (!currentLugarId) return
+        if (!currentFechaId) return
 
         toggleFormInputs(true)
         toggleSaveButton(true, 'Guardando...')
 
         const formData = {
-          nombre: document.getElementById('edit_nombre').value.trim(),
-          direccion: document.getElementById('edit_direccion').value.trim(),
-          tipo: document.getElementById('edit_tipo').value.trim()
+          id_evento: parseInt(document.getElementById('edit_id_evento').value),
+          fecha: document.getElementById('edit_fecha').value
+        }
+
+        // Validar que la fecha no sea anterior a hoy
+        const selectedDate = new Date(formData.fecha)
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        
+        if (selectedDate < today) {
+          showErrorAlert('La fecha no puede ser anterior a hoy')
+          toggleFormInputs(false)
+          toggleSaveButton(false)
+          return
         }
 
         try {
-          await ApiService.updateLugar(currentLugarId, formData)
+          await ApiService.updateFechaEvento(currentFechaId, formData)
 
           const modal = bootstrap.Modal.getInstance(editModal)
           modal.hide()
 
-          showSuccessAlert('Lugar actualizado exitosamente', () => {
+          showSuccessAlert('Fecha de evento actualizada exitosamente', () => {
             window.location.reload()
           })
         } catch (error) {
           console.error('Error:', error)
-          showErrorAlert('Error al actualizar el lugar. Por favor, intente nuevamente.')
+          showErrorAlert('Error al actualizar la fecha de evento')
           toggleFormInputs(false)
           toggleSaveButton(false)
         }
       }
 
-      // Manejador para eliminar lugar
-      if (e.target.closest('.delete-lugar')) {
-        const button = e.target.closest('.delete-lugar')
-        lugarToDelete = {
-          id: button.getAttribute('data-lugar-id'),
-          nombre: button.getAttribute('data-lugar-nombre')
+      // Manejador para eliminar fecha
+      if (e.target.closest('.delete-fecha')) {
+        const button = e.target.closest('.delete-fecha')
+        // Obtener el ID real desde el atributo data-real-id del <tr>
+        const row = button.closest('tr')
+        fechaToDelete = {
+          id: row.getAttribute('data-real-id'),
+          evento: button.getAttribute('data-fecha-evento'),
+          date: button.getAttribute('data-fecha-date')
         }
 
-        document.getElementById('deleteLugarNombre').textContent = lugarToDelete.nombre
+        document.getElementById('deleteFechaEvento').textContent = fechaToDelete.evento
+        document.getElementById('deleteFechaDate').textContent = fechaToDelete.date
         const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'))
         deleteModal.show()
       }
 
       // Confirmar eliminación
       if (e.target && e.target.id === 'confirmDeleteBtn') {
-        if (!lugarToDelete) return
+        if (!fechaToDelete) return
 
         const originalText = e.target.innerHTML
         e.target.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Eliminando...'
         e.target.disabled = true
 
         try {
-          await ApiService.deleteLugar(lugarToDelete.id)
+          await ApiService.deleteFechaEvento(fechaToDelete.id)
 
           const modal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'))
           modal.hide()
 
-          showSuccessAlert('Lugar eliminado exitosamente', () => {
+          showSuccessAlert('Fecha de evento eliminada exitosamente', () => {
             window.location.reload()
           })
         } catch (error) {
           console.error('Error:', error)
-          
-          const modal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'))
-          modal.hide()
-          
-          showErrorAlert('No se puede eliminar el lugar porque tiene eventos asociados')
+          showErrorAlert('Error al eliminar la fecha de evento')
           e.target.innerHTML = originalText
           e.target.disabled = false
         }
@@ -634,10 +741,9 @@ const lugaresPageConfig: PageHeaderProps = {
         const searchTerm = e.target.value.toLowerCase()
 
         filteredRows = allRows.filter(row => {
-          const nombre = row.querySelector('td:first-child .fw-medium')?.textContent.toLowerCase() || ''
-          const direccion = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || ''
-          const tipo = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || ''
-          return nombre.includes(searchTerm) || direccion.includes(searchTerm) || tipo.includes(searchTerm)
+          const evento = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || ''
+          const fecha = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || ''
+          return evento.includes(searchTerm) || fecha.includes(searchTerm)
         })
 
         currentPage = 1
@@ -652,18 +758,19 @@ const lugaresPageConfig: PageHeaderProps = {
 
       sortButton.addEventListener('click', function() {
         filteredRows.sort((a, b) => {
-          const nombreA = a.querySelector('td:first-child .fw-medium')?.textContent.toLowerCase() || ''
-          const nombreB = b.querySelector('td:first-child .fw-medium')?.textContent.toLowerCase() || ''
+          const fechaA = a.querySelector('td:nth-child(3)')?.textContent || ''
+          const fechaB = b.querySelector('td:nth-child(3)')?.textContent || ''
 
-          return isAscending
-            ? nombreA.localeCompare(nombreB)
-            : nombreB.localeCompare(nombreA)
+          const dateA = new Date(fechaA.split('/').reverse().join('-'))
+          const dateB = new Date(fechaB.split('/').reverse().join('-'))
+
+          return isAscending ? dateA - dateB : dateB - dateA
         })
 
         isAscending = !isAscending
         this.innerHTML = isAscending
-          ? '<i class="ri-sort-asc"></i> Ordenar A-Z'
-          : '<i class="ri-sort-desc"></i> Ordenar Z-A'
+          ? '<i class="ri-sort-asc"></i> Ordenar por Fecha ↑'
+          : '<i class="ri-sort-desc"></i> Ordenar por Fecha ↓'
 
         showPage(currentPage)
       })
