@@ -23,7 +23,7 @@ class StoreFechaEventoRequest extends FormRequest
     {
         return [
             'id_evento' => 'required|exists:evento,id_evento',
-            'fecha' => 'required|date|after_or_equal:today',
+            'fecha' => 'required|date|after_or_equal:yesterday',
         ];
     }
 
@@ -37,7 +37,7 @@ class StoreFechaEventoRequest extends FormRequest
             'id_evento.exists' => 'El evento seleccionado no existe',
             'fecha.required' => 'La fecha es obligatoria',
             'fecha.date' => 'La fecha debe ser una fecha válida',
-            'fecha.after_or_equal' => 'La fecha no puede ser anterior a hoy',
+            'fecha.after_or_equal' => 'La fecha no puede ser anterior a ayer',
         ];
     }
 }

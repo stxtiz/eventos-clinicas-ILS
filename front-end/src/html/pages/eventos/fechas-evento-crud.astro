@@ -60,7 +60,7 @@ const fechasEventoPageConfig: PageHeaderProps = {
             </div>
             <div class="col-md-4 text-end">
               <button class="btn btn-outline-secondary" id="sortButton">
-                <i class="ri-sort-asc"></i> Ordenar por Fecha
+                <i class="ri-sort-desc"></i> Ordenar por Fecha ↓
               </button>
             </div>
           </div>
@@ -88,17 +88,50 @@ const fechasEventoPageConfig: PageHeaderProps = {
                   </tr>
                 </thead>
                 <tbody id="fechasEventoTableBody">
-                  {fechasEvento.map((fechaEvento) => {
-                    const fecha = new Date(fechaEvento.fecha)
+                  {fechasEvento
+                    .sort((a, b) => {
+                      // Ordenar por fecha de menor a mayor (más antigua primero)
+                      const fechaA = new Date(a.fecha.split('T')[0])
+                      const fechaB = new Date(b.fecha.split('T')[0])
+                      return fechaA - fechaB
+                    })
+                    .map((fechaEvento, index) => {
+                    // Parsear fecha correctamente sin ajuste de zona horaria
+                    // Manejar tanto formato "YYYY-MM-DD" como objeto Date
+                    let fecha
+                    let fechaString = ''
+                    
+                    try {
+                      if (typeof fechaEvento.fecha === 'string') {
+                        // Formato esperado: "YYYY-MM-DD"
+                        const fechaParts = fechaEvento.fecha.split('T')[0].split('-')
+                        if (fechaParts.length === 3) {
+                          const [year, month, day] = fechaParts.map(Number)
+                          fecha = new Date(year, month - 1, day)
+                          fechaString = fechaEvento.fecha.split('T')[0]
+                        } else {
+                          fecha = new Date()
+                        }
+                      } else {
+                        fecha = new Date()
+                      }
+                    } catch (e) {
+                      fecha = new Date()
+                      fechaString = ''
+                    }
+                    
                     const hoy = new Date()
                     hoy.setHours(0, 0, 0, 0)
-                    const esFutura = fecha >= hoy
+                    const esHoy = fecha.getTime() === hoy.getTime()
+                    const esFutura = fecha > hoy
                     const esPasada = fecha < hoy
                     
                     return (
                       <tr>
                         <td>
-                          <span class="badge bg-secondary">#{fechaEvento.id_fecha}</span>
+                          <div class="d-flex flex-column">
+                            <span class="badge bg-secondary" style="width: fit-content;">#{index + 1}</span>
+                          </div>
                         </td>
                         <td>
                           <div>
@@ -113,7 +146,7 @@ const fechasEventoPageConfig: PageHeaderProps = {
                         <td>
                           <div class="d-flex align-items-center">
                             <i class="ri-calendar-line me-2"></i>
-                            <span>{new Date(fechaEvento.fecha).toLocaleDateString('es-ES', { 
+                            <span>{fecha.toLocaleDateString('es-ES', { 
                               year: 'numeric', 
                               month: 'long', 
                               day: 'numeric' 
@@ -121,29 +154,41 @@ const fechasEventoPageConfig: PageHeaderProps = {
                           </div>
                         </td>
                         <td>
-                          <span class={`badge bg-${esFutura ? 'success' : 'secondary'}`}>
-                            {esFutura ? 'Próxima' : 'Pasada'}
-                          </span>
+                          {esHoy ? (
+                            <span class="badge bg-primary">
+                              <i class="ri-calendar-check-line me-1"></i>
+                              Hoy
+                            </span>
+                          ) : esFutura ? (
+                            <span class="badge bg-success">
+                              <i class="ri-calendar-event-line me-1"></i>
+                              Próxima
+                            </span>
+                          ) : (
+                            <span class="badge bg-secondary">
+                              <i class="ri-calendar-line me-1"></i>
+                              Pasada
+                            </span>
+                          )}
                         </td>
                         <td class="text-end">
-                          <div class="btn-group" role="group">
                             <button 
-                              class="btn btn-sm btn-outline-primary edit-fecha" 
+                              class="btn btn-sm btn-light me-2 edit-fecha" 
                               data-fecha-id={fechaEvento.id_fecha}
+                              data-fecha={fechaString}
                               title="Editar"
                             >
                               <i class="ri-edit-line"></i>
                             </button>
                             <button 
-                              class="btn btn-sm btn-outline-danger delete-fecha" 
+                              class="btn btn-sm btn-danger delete-fecha" 
                               data-fecha-id={fechaEvento.id_fecha}
                               data-fecha-evento={fechaEvento.evento?.titulo || 'Sin nombre'}
-                              data-fecha-date={new Date(fechaEvento.fecha).toLocaleDateString('es-ES')}
+                              data-fecha-date={fecha.toLocaleDateString('es-ES')}
                               title="Eliminar"
                             >
                               <i class="ri-delete-bin-line"></i>
                             </button>
-                          </div>
                         </td>
                       </tr>
                     )
@@ -264,6 +309,38 @@ const fechasEventoPageConfig: PageHeaderProps = {
 
     const tableBody = document.getElementById('fechasEventoTableBody')
     const allRows = tableBody ? [...tableBody.querySelectorAll('tr')] : []
+
+    // Función auxiliar para parsear fechas correctamente (sin ajuste de zona horaria)
+    const parseFecha = (fechaString) => {
+      if (!fechaString) return new Date()
+      
+      try {
+        // Eliminar la parte de tiempo si existe (T00:00:00)
+        const fechaSolo = fechaString.split('T')[0]
+        const [year, month, day] = fechaSolo.split('-').map(Number)
+        
+        if (!year || !month || !day) {
+          console.warn('Fecha inválida:', fechaString)
+          return new Date()
+        }
+        
+        return new Date(year, month - 1, day)
+      } catch (error) {
+        console.error('Error parseando fecha:', fechaString, error)
+        return new Date()
+      }
+    }
+
+    // Función auxiliar para formatear fecha a YYYY-MM-DD
+    const formatFecha = (fecha) => {
+      if (!(fecha instanceof Date)) return ''
+      
+      const year = fecha.getFullYear()
+      const month = String(fecha.getMonth() + 1).padStart(2, '0')
+      const day = String(fecha.getDate()).padStart(2, '0')
+      
+      return `${year}-${month}-${day}`
+    }
 
     // Funciones de utilidad para UX
     const showLoading = (element, text = 'Cargando...') => {
@@ -481,9 +558,15 @@ const fechasEventoPageConfig: PageHeaderProps = {
       // Ocultar todas las filas
       allRows.forEach(row => row.style.display = 'none')
 
-      // Mostrar filas de la página actual
-      filteredRows.slice(startIndex, endIndex).forEach(row => {
+      // Mostrar filas de la página actual y renumerar
+      filteredRows.slice(startIndex, endIndex).forEach((row, index) => {
         row.style.display = ''
+        
+        // Actualizar el número ficticio en la primera columna
+        const badgeContainer = row.querySelector('td:first-child .badge')
+        if (badgeContainer) {
+          badgeContainer.textContent = `#${startIndex + index + 1}`
+        }
       })
 
       updatePagination()
@@ -523,12 +606,14 @@ const fechasEventoPageConfig: PageHeaderProps = {
       })
     })
 
-    // Establecer fecha mínima a hoy
+    // Establecer fecha mínima a hoy (en hora local, no UTC)
     const setMinDate = () => {
-      const today = new Date().toISOString().split('T')[0]
+      const today = new Date()
+      const todayString = formatFecha(today)
+      
       const addFechaInput = document.getElementById('add_fecha')
       if (addFechaInput) {
-        addFechaInput.setAttribute('min', today)
+        addFechaInput.setAttribute('min', todayString)
       }
     }
 
@@ -566,8 +651,8 @@ const fechasEventoPageConfig: PageHeaderProps = {
           fecha: formData.get('fecha')
         }
 
-        // Validar que la fecha no sea anterior a hoy
-        const selectedDate = new Date(data.fecha)
+        // Validar que la fecha no sea anterior a hoy (comparando fechas locales)
+        const selectedDate = parseFecha(data.fecha)
         const today = new Date()
         today.setHours(0, 0, 0, 0)
         
@@ -631,11 +716,14 @@ const fechasEventoPageConfig: PageHeaderProps = {
 
           // Establecer fecha
           const fechaInput = document.getElementById('edit_fecha')
-          fechaInput.value = fechaEvento.fecha
+          // Asegurarse de que la fecha esté en formato YYYY-MM-DD
+          const fechaValue = fechaEvento.fecha.split('T')[0]
+          fechaInput.value = fechaValue
           
-          // Establecer fecha mínima a hoy
-          const today = new Date().toISOString().split('T')[0]
-          fechaInput.setAttribute('min', today)
+          // Establecer fecha mínima a hoy (en hora local, no UTC)
+          const today = new Date()
+          const todayString = formatFecha(today)
+          fechaInput.setAttribute('min', todayString)
 
           toggleSaveButton(false)
         } catch (error) {
@@ -663,8 +751,8 @@ const fechasEventoPageConfig: PageHeaderProps = {
           fecha: document.getElementById('edit_fecha').value
         }
 
-        // Validar que la fecha no sea anterior a hoy
-        const selectedDate = new Date(formData.fecha)
+        // Validar que la fecha no sea anterior a hoy (comparando fechas locales)
+        const selectedDate = parseFecha(formData.fecha)
         const today = new Date()
         today.setHours(0, 0, 0, 0)
         
@@ -745,6 +833,14 @@ const fechasEventoPageConfig: PageHeaderProps = {
           return evento.includes(searchTerm) || fecha.includes(searchTerm)
         })
 
+        // Renumerar después de filtrar
+        filteredRows.forEach((row, index) => {
+          const badgeContainer = row.querySelector('td:first-child .badge')
+          if (badgeContainer) {
+            badgeContainer.textContent = `#${index + 1}`
+          }
+        })
+
         currentPage = 1
         showPage(1)
       })
@@ -753,9 +849,13 @@ const fechasEventoPageConfig: PageHeaderProps = {
     // Funcionalidad de ordenamiento
     const sortButton = document.getElementById('sortButton')
     if (sortButton && allRows.length > 0) {
+      // Comenzar en estado ascendente (ya que las fechas ya están ordenadas así)
       let isAscending = true
 
       sortButton.addEventListener('click', function() {
+        // Invertir el orden
+        isAscending = !isAscending
+        
         filteredRows.sort((a, b) => {
           const fechaA = a.querySelector('td:nth-child(3)')?.textContent || ''
           const fechaB = b.querySelector('td:nth-child(3)')?.textContent || ''
@@ -766,10 +866,17 @@ const fechasEventoPageConfig: PageHeaderProps = {
           return isAscending ? dateA - dateB : dateB - dateA
         })
 
-        isAscending = !isAscending
         this.innerHTML = isAscending
           ? '<i class="ri-sort-asc"></i> Ordenar por Fecha ↑'
           : '<i class="ri-sort-desc"></i> Ordenar por Fecha ↓'
+
+        // Renumerar después de ordenar
+        filteredRows.forEach((row, index) => {
+          const badgeContainer = row.querySelector('td:first-child .badge')
+          if (badgeContainer) {
+            badgeContainer.textContent = `#${index + 1}`
+          }
+        })
 
         showPage(currentPage)
       })

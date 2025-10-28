@@ -22,7 +22,7 @@ class UpdateFechaEventoRequest extends FormRequest
     {
         return [
             'id_evento' => 'sometimes|required|exists:evento,id_evento',
-            'fecha' => 'sometimes|required|date|after_or_equal:today',
+            'fecha' => 'sometimes|required|date|after_or_equal:yesterday',
         ];
     }
 
@@ -34,7 +34,7 @@ class UpdateFechaEventoRequest extends FormRequest
         return [
             'id_evento.exists' => 'El evento seleccionado no existe',
             'fecha.date' => 'La fecha debe ser una fecha válida',
-            'fecha.after_or_equal' => 'La fecha no puede ser anterior a hoy',
+            'fecha.after_or_equal' => 'La fecha no puede ser anterior a ayer',
         ];
     }
 }

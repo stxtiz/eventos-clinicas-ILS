@@ -31,8 +31,11 @@ class FechaEvento extends Model
 
     // Tratados como tipos específicos
     protected $casts = [
-        'fecha' => 'date',
+        'fecha' => 'date:Y-m-d',
     ];
+
+    // Serialización para API
+    protected $dateFormat = 'Y-m-d';
 
     // ============================================
     // RELACIONES
@@ -97,6 +100,14 @@ class FechaEvento extends Model
     public function scopeOrdenadaPorFecha($query)
     {
         return $query->orderBy('fecha', 'asc');
+    }
+
+    /**
+     * Asegurar que la fecha se devuelva siempre en formato Y-m-d para la API
+     */
+    protected function serializeDate(\DateTimeInterface $date): string
+    {
+        return $date->format('Y-m-d');
     }
 
     // ============================================
