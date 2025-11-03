@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\EventoController;
+use App\Http\Controllers\FechaEventoController;
 use App\Http\Controllers\LugarController;
 use App\Models\Usuario;
 use App\Http\Controllers\UsuarioController;
@@ -107,4 +108,21 @@ Route::prefix('lugares')->group(function() {
     Route::put('/{lugar}', [LugarController::class, 'update']);             // Actualizar un lugar (Route Model Binding)
     Route::patch('/{lugar}', [LugarController::class, 'update']);           // Actualizar parcialmente un lugar (Route Model Binding)
     Route::delete('/{lugar}', [LugarController::class, 'destroy']);         // Eliminar un lugar (solo si no tiene eventos)
+});
+
+// ============================================
+// RUTAS DE FECHAS DE EVENTOS (CRUD COMPLETO)
+// ============================================
+Route::prefix('fechas-evento')->group(function() {
+
+    // Rutas especiales (DEBEN IR ANTES de las rutas con parámetros)
+    Route::get('/evento/{idEvento}', [FechaEventoController::class, 'fechasPorEvento']);
+
+    // Rutas básicas del CRUD con Route Model Binding
+    Route::get('/', [FechaEventoController::class, 'index']);                       // Listar todas las fechas de eventos
+    Route::get('/{fechaEvento}', [FechaEventoController::class, 'show']);           // Ver una fecha específica (Route Model Binding)
+    Route::post('/', [FechaEventoController::class, 'store']);                      // Crear una nueva fecha de evento
+    Route::put('/{fechaEvento}', [FechaEventoController::class, 'update']);         // Actualizar una fecha (Route Model Binding)
+    Route::patch('/{fechaEvento}', [FechaEventoController::class, 'update']);       // Actualizar parcialmente una fecha (Route Model Binding)
+    Route::delete('/{fechaEvento}', [FechaEventoController::class, 'destroy']);     // Eliminar una fecha (eliminación física)
 });

@@ -7,7 +7,7 @@
 
 */
 const API_BASE_URL =
-  import.meta.env.PUBLIC_API_URL || "http://eventos-clinicas-ILS.test/api";
+  import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
 
 export class ApiService {
   static async request(endpoint, options = {}) {
@@ -189,5 +189,47 @@ export class ApiService {
   // Buscar lugares por nombre
   static async buscarLugaresPorNombre(nombre) {
     return this.request(`/lugares/buscar/${nombre}`);
+  }
+
+  // ============================================
+  // MÉTODOS PARA GESTIÓN DE FECHAS DE EVENTOS (CRUD)
+  // ============================================
+
+  // Listar todas las fechas de eventos
+  static async getFechasEvento() {
+    return this.request("/fechas-evento");
+  }
+
+  // Ver una fecha de evento específica
+  static async getFechaEvento(id) {
+    return this.request(`/fechas-evento/${id}`);
+  }
+
+  // Crear una nueva fecha de evento
+  static async createFechaEvento(data) {
+    return this.request("/fechas-evento", {
+      method: "POST",
+      body: data,
+    });
+  }
+
+  // Actualizar una fecha de evento
+  static async updateFechaEvento(id, data) {
+    return this.request(`/fechas-evento/${id}`, {
+      method: "PUT",
+      body: data,
+    });
+  }
+
+  // Eliminar una fecha de evento
+  static async deleteFechaEvento(id) {
+    return this.request(`/fechas-evento/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Obtener fechas de un evento específico
+  static async getFechasPorEvento(idEvento) {
+    return this.request(`/fechas-evento/evento/${idEvento}`);
   }
 }
